@@ -1,0 +1,64 @@
+// Writing values for 2 Servos from Unreal Engine 5
+
+#include <Servo.h>
+
+Servo servo1;
+Servo servo2;
+
+char buffer[40];  // Buffer to hold incoming data
+int len = 0;      // Length of the incoming data
+
+void setup() {
+  Serial.begin(9600);  // Start serial communication at 9600 baud
+  servo1.attach(8);    // Attach the first servo to pin 8
+  servo2.attach(9);    // Attach the second servo to pin 9
+}
+
+void loop() {
+  // Check if serial data is available
+  if (Serial.available() > 0) {
+    char inByte = Serial.read();  // Read incoming byte
+    buffer[len++] = inByte;       // Store byte in buffer
+
+    // Prevent buffer overflow
+    if (len >= sizeof(buffer)) {
+      len = 0;
+    }
+
+    // Check for end of message (newline)
+    if (inByte == '\n') {
+      buffer[len] = '\0';  // Null-terminate the string
+
+      int servoVal1, servoVal2, servoVal3;
+      // Parse two values separated by a comma
+      int n = sscanf(buffer, "%d,%d,%d", &servoVal1, &servoVal2, &servoVal3);
+
+      // Debugging output
+      Serial.print("Received: ");
+      Serial.println(buffer);  // Print the raw buffer
+
+      if (n == 2) {  // If we correctly parsed 2 integers
+        // Clamp values to valid servo range (0 to 180)
+        servoVal1 = constrain(servoVal1, 0, 180);
+        servoVal2 = constrain(servoVal2, 0, 180);
+
+        // Write values to servos
+        servo1.write(servoVal1);  
+        servo2.write(servoVal2);   
+
+        // Debugging output
+        Serial.print("Servo1: ");
+        Serial.println(servoVal1);
+        Serial.print("Servo2: ");
+        Serial.println(servoVal2);
+        
+      } else {
+        // If parsing failed, print error
+        Serial.println("Error: Invalid data format.");
+      }
+
+      // Reset buffer length for the next message
+      len = 0;
+    }
+  }
+}
