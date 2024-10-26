@@ -1,4 +1,4 @@
-// Writing values for 2 Servos from Unreal Engine 5
+// Writing values for 2 Servos from Unreal Engine
 
 #include <Servo.h>
 
